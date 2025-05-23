@@ -1,0 +1,14 @@
+finalproj\styling\style.class
+finalproj\model\song.class
+finalproj\view\top.class
+finalproj\MainApp.class
+finalproj\util\mediaplayer.class
+finalproj\view\left.class
+finalproj\controller\uploadcontroller.class
+finalproj\model\songrepo.class
+finalproj\util\jpautil.class
+finalproj\util\filehelper.class
+finalproj\controller\musiccontroller.class
+finalproj\view\right.class
+finalproj\controller\playbackcontroller.class
+finalproj\view\bottom.class
