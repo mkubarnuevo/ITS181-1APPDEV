@@ -3,41 +3,43 @@ package finalproj.view;
 import javafx.geometry.Insets;
 import javafx.scene.Node;
 import javafx.scene.control.Label;
-import javafx.scene.control.ListView;
-import javafx.scene.layout.VBox;
-import javafx.scene.text.Font;
-import javafx.scene.text.FontWeight;
+import javafx.scene.layout.BorderPane;
+import javafx.scene.layout.StackPane;
+import javafx.scene.media.MediaView;
 
 public class left {
 
-    private VBox leftPane;
-    private ListView<String> songListView;
+    private BorderPane leftPane;
+    private MediaView mediaView;
 
     public left() {
         initialize();
     }
 
     private void initialize() {
-        leftPane = new VBox();
+        leftPane = new BorderPane();
         leftPane.setPadding(new Insets(10));
-        leftPane.setSpacing(10);
-        leftPane.setStyle("-fx-background-color: #ecf0f1;");  // edit niyo yung color
+        leftPane.setStyle("-fx-background-color: #ecf0f1;"); // light background color
 
-        Label header = new Label("Songs");
-        header.setFont(Font.font("Arial", FontWeight.BOLD, 18));
+        // MediaView for video playback in center
+        mediaView = new MediaView();
+        mediaView.setPreserveRatio(true);
 
-        songListView = new ListView<>();
-        songListView.setPrefWidth(200);
-        songListView.setPrefHeight(400);
+        // Placeholder overlay when no video loaded
+        Label placeholder = new Label("Video will be displayed here");
+        placeholder.setStyle("-fx-text-fill: gray; -fx-font-style: italic;");
 
-        leftPane.getChildren().addAll(header, songListView);
+        StackPane centerStack = new StackPane();
+        centerStack.getChildren().addAll(mediaView, placeholder);
+
+        leftPane.setCenter(centerStack);
     }
 
     public Node getView() {
         return leftPane;
     }
 
-    public ListView<String> getSongListView() {
-        return songListView;
+    public MediaView getMediaView() {
+        return mediaView;
     }
 }

@@ -29,7 +29,8 @@ public class musiccontroller {
     }
 
     private void setupListeners() {
-        leftView.getSongListView().getSelectionModel().selectedItemProperty().addListener((obs, oldVal, newVal) -> {
+        // Listen to song dropdown in bottomView
+        bottomView.getSongDropdown().getSelectionModel().selectedItemProperty().addListener((obs, oldVal, newVal) -> {
             if (newVal != null) {
                 playSelectedSong(newVal);
             }
@@ -38,9 +39,11 @@ public class musiccontroller {
         bottomView.getPlayButton().setOnAction(e -> {
             if (mediaPlayer != null) mediaPlayer.play();
         });
+
         bottomView.getPauseButton().setOnAction(e -> {
             if (mediaPlayer != null) mediaPlayer.pause();
         });
+
         bottomView.getStopButton().setOnAction(e -> {
             if (mediaPlayer != null) {
                 mediaPlayer.stop();
@@ -66,6 +69,9 @@ public class musiccontroller {
             Media media = new Media(mediaFile.toURI().toString());
             mediaPlayer = new MediaPlayer(media);
 
+            // Connect mediaPlayer to the MediaView in leftView for video display
+            leftView.getMediaView().setMediaPlayer(mediaPlayer);
+
             // Load lyrics from lyrics folder
             String lyricsPath = "lyrics/" + songTitle + ".txt";
             String lyrics = "";
@@ -85,7 +91,7 @@ public class musiccontroller {
                     Platform.runLater(() -> bottomView.getProgressBar().setProgress(progress));
                 }
             });
-            
+
             mediaPlayer.setOnEndOfMedia(() -> {
                 Platform.runLater(() -> bottomView.getProgressBar().setProgress(0));
             });
