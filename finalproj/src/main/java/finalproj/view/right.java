@@ -18,7 +18,7 @@ public class right {
     private void initialize() {
         rightPane = new VBox();
         rightPane.setPadding(new Insets(10));
-        rightPane.setStyle("-fx-background-color: #f0f0f0;"); //edit niyo color
+        rightPane.setStyle("-fx-background-color: #93B1A7;"); //edit niyo color
 
         lyricsArea = new TextArea();
         lyricsArea.setWrapText(true);
