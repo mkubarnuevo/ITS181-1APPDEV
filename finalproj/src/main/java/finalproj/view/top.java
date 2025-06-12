@@ -13,11 +13,16 @@ import javafx.scene.text.FontWeight;
 public class top {
 
     private HBox topPane;
+    private Button lyricsButton;
     private Button uploadButton;
     private Button removeButton;
+    private right rightPane;
+    private boolean lyricsVisible = true; // toggle state
 
-    public top() {
+    public top(right rightPane) {
+        this.rightPane = rightPane;
         initialize();
+        setupActions();
     }
 
     private void initialize() {
@@ -31,23 +36,24 @@ public class top {
             "-fx-border-style: solid;"
         );
 
-        // Title Label
-        Label titleLabel = new Label("Group () Music Player");
+        Label titleLabel = new Label("Group 12 Music Player");
         titleLabel.setFont(Font.font("Arial", FontWeight.BOLD, 24));
         titleLabel.setStyle("-fx-text-fill: white;");
 
-        // Spacer to push buttons to the right
+        // components spacer
         HBox spacer = new HBox();
         HBox.setHgrow(spacer, Priority.ALWAYS);
 
-        // Upload & Remove Buttons
+        // buttons
+        lyricsButton = new Button("LYRICS");
         uploadButton = new Button("UPLOAD SONG");
         removeButton = new Button("REMOVE SONG");
 
+        styleButton(lyricsButton);
         styleButton(uploadButton);
         styleButton(removeButton);
 
-        HBox buttonBox = new HBox(10, uploadButton, removeButton);
+        HBox buttonBox = new HBox(10, lyricsButton, uploadButton, removeButton);
         buttonBox.setAlignment(Pos.CENTER_RIGHT);
 
         topPane.getChildren().addAll(titleLabel, spacer, buttonBox);
@@ -63,8 +69,33 @@ public class top {
         );
     }
 
+    private void setupActions() {
+        lyricsButton.setOnAction(e -> {
+            if (!lyricsVisible) {
+                rightPane.showLyrics();
+                lyricsVisible = true;
+            } else {
+                rightPane.showLyrics(); // optional: replace with hiding behavior if needed
+            }
+        });
+
+        uploadButton.setOnAction(e -> {
+            rightPane.showUpload();
+            lyricsVisible = false;
+        });
+
+        removeButton.setOnAction(e -> {
+            rightPane.showRemove();
+            lyricsVisible = false;
+        });
+    }
+
     public Node getView() {
         return topPane;
+    }
+
+    public Button getLyricsButton() {
+        return lyricsButton;
     }
 
     public Button getUploadButton() {

@@ -1,5 +1,10 @@
 package finalproj.view;
 
+import java.util.List;
+
+import finalproj.model.song;
+import finalproj.model.songservice;
+import javafx.application.Platform;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.Node;
@@ -10,7 +15,7 @@ import javafx.scene.control.ProgressBar;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Priority;
 import javafx.scene.layout.Region;
-import javafx.scene.layout.VBox;
+import javafx.scene.layout.VBox; // <-- ADD THIS IMPORT
 
 public class bottom {
 
@@ -20,9 +25,11 @@ public class bottom {
     private Button pauseButton;
     private Button stopButton;
     private ProgressBar progressBar;
+    private SongSelectionListener songListener;
 
     public bottom() {
         initialize();
+        refreshSongDropdown();
     }
 
     private void initialize() {
@@ -31,13 +38,11 @@ public class bottom {
         bottomPane.setSpacing(10);
         bottomPane.setStyle("-fx-background-color: #7A918D;");
 
-        // Top HBox containing dropdown (left), NOW PLAYING (center), and buttons (right)
         HBox controls = new HBox();
         controls.setSpacing(10);
         controls.setPadding(new Insets(0, 0, 0, 0));
         controls.setAlignment(Pos.CENTER_LEFT);
 
-        // Dropdown
         songDropdown = new ComboBox<>();
         songDropdown.setPromptText("Select a Song");
         songDropdown.setPrefWidth(200);
@@ -50,11 +55,18 @@ public class bottom {
             "-fx-text-fill: #FFFFFF;"
         );
 
-        // Center Label
+        songDropdown.setOnAction(e -> {
+            String selectedSong = songDropdown.getValue();
+            if (selectedSong != null && songListener != null) {
+                songListener.onSongSelected(selectedSong);
+            }
+        });
+
+        // playing song label
         Label nowPlayingLabel = new Label("NOW PLAYING");
         nowPlayingLabel.setStyle("-fx-text-fill: white; -fx-font-size: 14px; -fx-font-weight: bold;");
 
-        // Buttons
+        // playback buttons
         playButton = new Button("▶");
         pauseButton = new Button("⏪");
         stopButton = new Button("⏩");
@@ -75,7 +87,7 @@ public class bottom {
         HBox buttonsBox = new HBox(15, playButton, pauseButton, stopButton);
         buttonsBox.setAlignment(Pos.CENTER_RIGHT);
 
-        // Spacer setup
+        // component spacer
         Region spacerLeft = new Region();
         Region spacerRight = new Region();
         HBox.setHgrow(spacerLeft, Priority.ALWAYS);
@@ -83,7 +95,7 @@ public class bottom {
 
         controls.getChildren().addAll(songDropdown, spacerLeft, nowPlayingLabel, spacerRight, buttonsBox);
 
-        // Progress Bar
+        // progress bar
         progressBar = new ProgressBar(0);
         progressBar.setPrefWidth(300);
         progressBar.setStyle("-fx-accent: #DBFEB8;");
@@ -118,5 +130,25 @@ public class bottom {
 
     public ProgressBar getProgressBar() {
         return progressBar;
+    }
+
+    public void refreshSongDropdown() {
+        songservice songService = new songservice();
+        List<song> songs = songService.getAllSongs();
+
+        Platform.runLater(() -> {
+            songDropdown.getItems().clear();
+            for (song s : songs) {
+                songDropdown.getItems().add(s.getTitle());
+            }
+        });
+    }
+
+    public interface SongSelectionListener {
+        void onSongSelected(String songName);
+    }
+
+    public void setSongSelectionListener(SongSelectionListener listener) {
+        this.songListener = listener;
     }
 }
