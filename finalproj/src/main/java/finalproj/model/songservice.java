@@ -43,4 +43,27 @@ public class songservice {
             em.close();
         }
     }
+
+    public void deleteSong(Long id) {
+        EntityManager em = jpautil.getEntityManager();
+        try {
+            em.getTransaction().begin();
+            // Find the song by ID
+            song songToDelete = em.find(song.class, id);
+            if (songToDelete != null) {
+                // Remove the song if found
+                em.remove(songToDelete);
+            } else {
+                System.out.println("No song found with ID: " + id + " for deletion.");
+            }
+            em.getTransaction().commit();
+        } catch (Exception e) {
+            if (em.getTransaction().isActive()) {
+                em.getTransaction().rollback(); // Rollback on error
+            }
+            throw new RuntimeException("Error deleting song with ID: " + id, e);
+        } finally {
+            em.close();
+        }
+    }
 }
