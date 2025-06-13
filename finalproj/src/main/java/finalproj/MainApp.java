@@ -1,7 +1,7 @@
 package finalproj;
 
 import finalproj.controller.maincontroller;
-import finalproj.view.bottom; // Ensure this is the correct package for your 'bottom' class
+import finalproj.view.bottom;
 import finalproj.view.left;
 import finalproj.view.right;
 import finalproj.view.top;

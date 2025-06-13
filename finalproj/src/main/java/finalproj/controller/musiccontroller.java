@@ -40,11 +40,11 @@ public class musiccontroller {
             if (mediaPlayer != null) mediaPlayer.play();
         });
 
-        bottomView.getPauseButton().setOnAction(e -> {
+        bottomView.getRewindButton().setOnAction(e -> {
             if (mediaPlayer != null) mediaPlayer.pause();
         });
 
-        bottomView.getStopButton().setOnAction(e -> {
+        bottomView.getForwardButton().setOnAction(e -> {
             if (mediaPlayer != null) {
                 mediaPlayer.stop();
                 bottomView.getProgressBar().setProgress(0);

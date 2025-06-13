@@ -3,10 +3,12 @@ finalproj\model\song.class
 finalproj\view\bottom$SongSelectionListener.class
 finalproj\view\top.class
 finalproj\util\SQLiteDialect.class
+finalproj\view\right$1.class
 finalproj\MainApp.class
 finalproj\util\mediaplayer.class
 finalproj\view\left.class
 finalproj\controller\uploadcontroller.class
+finalproj\view\right$2.class
 finalproj\controller\maincontroller.class
 finalproj\util\jpautil.class
 finalproj\util\filehelper.class

@@ -65,7 +65,8 @@ public class top {
             "-fx-text-fill: #99C2A2;" +
             "-fx-font-size: 13px;" +
             "-fx-font-weight: bold;" +
-            "-fx-background-radius: 5;"
+            "-fx-background-radius: 5;" +
+            "-fx-effect: dropshadow(two-pass-box, rgba(0,0,0,0.5), 3, 0, 0, 1);"
         );
     }
 
@@ -75,7 +76,7 @@ public class top {
                 rightPane.showLyrics();
                 lyricsVisible = true;
             } else {
-                rightPane.showLyrics(); // optional: replace with hiding behavior if needed
+                rightPane.showLyrics();
             }
         });
 

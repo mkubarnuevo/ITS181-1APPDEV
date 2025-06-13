@@ -68,7 +68,7 @@ public class right implements bottom.SongSelectionListener {
             "Lyrics will appear here when a song is selected."
         );
         lyricsArea.setPrefWidth(300);
-        lyricsArea.setPrefHeight(424);
+        lyricsArea.setPrefHeight(417);
 
         lyricsArea.setMaxHeight(Double.MAX_VALUE);
 
@@ -477,6 +477,10 @@ public class right implements bottom.SongSelectionListener {
 
             song newSong = new song(songTitle, videoDest.toString(), lyricsDest.toString());
             songservice songService = new songservice();
+            if (songService.getSongByTitle(songTitle).isPresent()) {
+                uploadStatusLabel.setText("Error: A song with this title already exists. Choose a different song.");
+                return;
+            }
             songService.saveSong(newSong);
 
             if (bottomPanel != null) {
