@@ -31,7 +31,7 @@ public class bottom {
     private ProgressBar progressBar;
     private SongSelectionListener songListener;
     private Label currentlyPlayingSongLabel;
-    private boolean isPlaying = false;
+    private boolean isPlaying = false; // This reflects the UI state, not MediaPlayer state
 
     public bottom() {
         initialize();
@@ -78,24 +78,23 @@ public class bottom {
             }
         });
 
+        // --- Song Dropdown Action Handler (NOTIFIES LISTENER and updates UI state) ---
         songDropdown.setOnAction(e -> {
             String selectedSong = songDropdown.getValue();
             if (selectedSong != null) {
                 currentlyPlayingSongLabel.setText(selectedSong);
                 if (songListener != null) {
-                    songListener.onSongSelected(selectedSong);
+                    songListener.onSongSelected(selectedSong); // Delegate to listener for media playback
                 }
-                 if (songDropdown.getValue() != null && !songDropdown.getValue().isEmpty()) {
-                    isPlaying = true;
-                    playButton.setText("𝗹𝗹");
-                } else {
-                    isPlaying = false;
-                    playButton.setText("▶");
-                }
+                // The actual `isPlaying` state and play button text will be set by playbackcontroller
+                // once the media is ready and starts playing.
             } else {
                 currentlyPlayingSongLabel.setText("No song selected");
-                isPlaying = false;
-                playButton.setText("▶");
+                isPlaying = false; // UI state for play/pause button
+                playButton.setText("▶"); // UI state for play/pause button
+                if (songListener != null) {
+                    songListener.onSongSelected(null); // Indicate no song selected/stop
+                }
             }
         });
 
@@ -126,32 +125,51 @@ public class bottom {
         forwardButton.setStyle(buttonStyle);
         shuffleButton.setStyle(buttonStyle);
 
+        // --- Play/Pause Button Logic (Updates UI locally, listener for playback) ---
         playButton.setOnAction(e -> {
             if (currentlyPlayingSongLabel.getText().equals("No song selected") ||
                 currentlyPlayingSongLabel.getText().equals("Select a song")) {
-                System.out.println("DEBUG: Cannot play. No song selected.");
+                System.out.println("DEBUG: Cannot play/pause. No song selected.");
                 return;
             }
 
-            if (isPlaying) {
-                playButton.setText("▶");
-                System.out.println("DEBUG: Paused playback of " + currentlyPlayingSongLabel.getText());
-            } else {
-                playButton.setText("𝗹𝗹");
-                System.out.println("DEBUG: Started/Resumed playback of " + currentlyPlayingSongLabel.getText());
+            if (isPlaying) { // If currently playing, pause it
+                // We'll let playbackcontroller update the UI state.
+                if (songListener != null) songListener.onPause(); // Delegate pause action
+                System.out.println("DEBUG: Paused playback request for " + currentlyPlayingSongLabel.getText());
+            } else { // If currently paused, play it
+                // We'll let playbackcontroller update the UI state.
+                if (songListener != null) songListener.onPlay(); // Delegate play/resume action
+                System.out.println("DEBUG: Play/Resume playback request for " + currentlyPlayingSongLabel.getText());
             }
-            isPlaying = !isPlaying;
+            // isPlaying state will be updated by setPlayButtonState from playbackcontroller
         });
 
+        // --- Rewind Button Logic (Delegates to listener) ---
+        rewindButton.setOnAction(e -> {
+            if (songListener != null) {
+                songListener.onRewind();
+            }
+            System.out.println("DEBUG: Rewind button pressed.");
+        });
+
+        // --- Forward Button Logic (Delegates to listener) ---
+        forwardButton.setOnAction(e -> {
+            if (songListener != null) {
+                songListener.onForward();
+            }
+            System.out.println("DEBUG: Forward button pressed.");
+        });
+
+        // --- Shuffle Button Logic (Ensures a song is always selected if available) ---
         shuffleButton.setOnAction(e -> {
             songservice songService = new songservice();
             List<song> allSongs = songService.getAllSongs();
             String currentlyPlayingTitle = currentlyPlayingSongLabel.getText();
 
-            // create a mutable list to work with
             List<song> availableSongsForShuffle = new ArrayList<>(allSongs);
 
-            // remove the currently playing song from the list if it exists and valid
+            // Remove the currently playing song from the list if it exists and is valid
             if (!currentlyPlayingTitle.equals("No song selected") && !currentlyPlayingTitle.equals("Select a song")) {
                 availableSongsForShuffle.removeIf(s -> s.getTitle().equals(currentlyPlayingTitle));
                 System.out.println("DEBUG: Removed '" + currentlyPlayingTitle + "' from shuffle candidates.");
@@ -161,31 +179,31 @@ public class bottom {
                 Collections.shuffle(availableSongsForShuffle);
 
                 Platform.runLater(() -> {
-                    songDropdown.getItems().clear();
-                    allSongs.forEach(s -> songDropdown.getItems().add(s.getTitle()));
-
                     String nextShuffledSong = availableSongsForShuffle.get(0).getTitle();
-                    songDropdown.getSelectionModel().select(nextShuffledSong);
-                    currentlyPlayingSongLabel.setText(nextShuffledSong);
-
-                    if (songListener != null) {
-                        songListener.onSongSelected(nextShuffledSong);
-                    }
+                    songDropdown.getSelectionModel().select(nextShuffledSong); // This will trigger onAction
+                    // The onAction of songDropdown already calls songListener.onSongSelected(nextShuffledSong)
+                    // and playbackcontroller handles setting the UI state (isPlaying and playButton.setText).
                     System.out.println("DEBUG: Songs shuffled. Next song selected: " + nextShuffledSong);
-
-                    isPlaying = true;
-                    playButton.setText("𝗹𝗹");
                 });
-            } else {
+            } else if (!allSongs.isEmpty() && allSongs.size() == 1) { // Only one song available
                 Platform.runLater(() -> {
-                    if (allSongs.isEmpty()) {
-                        currentlyPlayingSongLabel.setText("No songs to shuffle.");
-                        System.out.println("DEBUG: Attempted to shuffle, but no songs are available.");
-                    } else {
-                        System.out.println("DEBUG: Only one song available. Cannot shuffle to a different song.");
+                    System.out.println("DEBUG: Only one song available. No new song to shuffle to.");
+                    // You might want to re-select the existing song to restart it, or do nothing.
+                    // For now, it will simply stay on the current song if it's the only one.
+                    // If no song is playing, and there's only one, select it.
+                    if (currentlyPlayingTitle.equals("No song selected") || currentlyPlayingTitle.equals("Select a song")) {
+                        songDropdown.getSelectionModel().select(allSongs.get(0).getTitle());
                     }
+                });
+            } else { // No songs at all
+                Platform.runLater(() -> {
+                    currentlyPlayingSongLabel.setText("No songs to shuffle.");
+                    System.out.println("DEBUG: Attempted to shuffle, but no songs are available.");
+                    // Update UI state to stopped
                     isPlaying = false;
                     playButton.setText("▶");
+                    // Also clear playback if any phantom media was playing
+                    if (songListener != null) songListener.onStop(); 
                 });
             }
         });
@@ -248,13 +266,14 @@ public class bottom {
     }
 
     public void registerKeybinds(javafx.event.EventHandler<KeyEvent> handler) {
-        // this enures the handler is only added when a song is selected
         bottomPane.sceneProperty().addListener((obs, oldScene, newScene) -> {
             if (oldScene != null) {
                 oldScene.removeEventFilter(KeyEvent.KEY_PRESSED, handler);
+                System.out.println("DEBUG: Removed old keybind handler from scene.");
             }
             if (newScene != null) {
                 newScene.addEventFilter(KeyEvent.KEY_PRESSED, handler);
+                System.out.println("DEBUG: Added new keybind handler to scene.");
             }
         });
     }
@@ -264,16 +283,28 @@ public class bottom {
         List<song> songs = songService.getAllSongs();
 
         Platform.runLater(() -> {
+            String currentSelection = songDropdown.getValue();
             songDropdown.getItems().clear();
             songs.forEach(s -> songDropdown.getItems().add(s.getTitle()));
+            
             if (songs.isEmpty()) {
+                songDropdown.setPromptText("No Songs Available");
                 currentlyPlayingSongLabel.setText("No song selected");
-                isPlaying = false;
-                playButton.setText("▶");
-            } else if (songDropdown.getValue() == null) {
-                currentlyPlayingSongLabel.setText("Select a song");
-                isPlaying = false;
-                playButton.setText("▶");
+                setPlayButtonState(false);
+                updateProgressBar(0); // Also reset progress bar if no songs
+                if (songListener != null) {
+                    songListener.onSongSelected(null); // Notify listener no song selected
+                }
+            } else {
+                songDropdown.setPromptText("Select a Song");
+                if (currentSelection != null && songDropdown.getItems().contains(currentSelection)) {
+                    songDropdown.getSelectionModel().select(currentSelection);
+                    currentlyPlayingSongLabel.setText(currentSelection);
+                } else {
+                    currentlyPlayingSongLabel.setText("Select a song");
+                    setPlayButtonState(false); // Reset to play icon
+                    updateProgressBar(0); // Reset progress bar
+                }
             }
         });
     }
@@ -282,18 +313,40 @@ public class bottom {
         Platform.runLater(() -> {
             if (songTitle != null && !songTitle.isEmpty()) {
                 currentlyPlayingSongLabel.setText(songTitle);
-                isPlaying = true;
-                playButton.setText("||");
             } else {
                 currentlyPlayingSongLabel.setText("No song selected");
-                isPlaying = false;
-                playButton.setText("▶");
             }
         });
     }
+    
+    public void setPlayButtonState(boolean playing) {
+        this.isPlaying = playing; // Update internal UI state
+        Platform.runLater(() -> playButton.setText(playing ? "𝗹𝗹" : "▶"));
+    }
 
+    public void updateProgressBar(double progress) {
+        Platform.runLater(() -> progressBar.setProgress(progress));
+    }
+
+    public void clearCurrentSongDisplay() {
+        Platform.runLater(() -> {
+            currentlyPlayingSongLabel.setText("No song selected");
+            songDropdown.getSelectionModel().clearSelection();
+            songDropdown.setPromptText("Select a Song"); // Reset prompt text
+            setPlayButtonState(false);
+            updateProgressBar(0);
+        });
+    }
+
+    // --- SongSelectionListener Interface ---
     public interface SongSelectionListener {
-        void onSongSelected(String songName);
+        void onSongSelected(String songName); 
+        void onPlay();
+        void onPause();
+        void onRewind();
+        void onForward();
+        void onStop(); 
+        void onShuffle(); 
     }
 
     public void setSongSelectionListener(SongSelectionListener listener) {

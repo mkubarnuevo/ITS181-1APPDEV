@@ -32,10 +32,9 @@ import javafx.stage.FileChooser;
 import javafx.stage.Modality;
 import javafx.stage.Stage;
 
-public class right implements bottom.SongSelectionListener {
+public class right implements bottom.SongSelectionListener { // Still implements listener
 
     private StackPane rightPane;
-
     private VBox lyricsView;
     private VBox uploadView;
     private VBox removeView;
@@ -47,11 +46,10 @@ public class right implements bottom.SongSelectionListener {
 
     private VBox songListContainer;
 
-    private bottom bottomPanel;
+    private bottom bottomPanel; // Keep reference to bottom for refreshing dropdown
 
     public right(bottom bottomPanel) {
         this.bottomPanel = bottomPanel;
-        this.bottomPanel.setSongSelectionListener(this);
         initialize();
     }
 
@@ -60,7 +58,6 @@ public class right implements bottom.SongSelectionListener {
         rightPane.setPadding(new Insets(10));
         rightPane.setStyle("-fx-background-color: #93B1A7;");
 
-        // view lyrics
         lyricsArea = new TextArea();
         lyricsArea.setWrapText(true);
         lyricsArea.setEditable(false);
@@ -69,9 +66,7 @@ public class right implements bottom.SongSelectionListener {
         );
         lyricsArea.setPrefWidth(300);
         lyricsArea.setPrefHeight(417);
-
         lyricsArea.setMaxHeight(Double.MAX_VALUE);
-
         lyricsArea.setStyle(
             "-fx-control-inner-background: #E8F4E8; -fx-text-fill: #3A3A3A;" +
             " -fx-font-size: 14px;"
@@ -80,19 +75,14 @@ public class right implements bottom.SongSelectionListener {
         ScrollPane lyricsScrollPane = new ScrollPane(lyricsArea);
         lyricsScrollPane.setFitToWidth(true);
         lyricsScrollPane.setPrefHeight(580);
-
         lyricsScrollPane.setVbarPolicy(ScrollBarPolicy.AS_NEEDED);
         lyricsScrollPane.setHbarPolicy(ScrollBarPolicy.NEVER);
-
         VBox.setVgrow(lyricsScrollPane, Priority.ALWAYS);
-
         lyricsView = new VBox(lyricsScrollPane);
         lyricsView.setAlignment(Pos.CENTER);
         lyricsView.setMaxWidth(Double.MAX_VALUE);
         lyricsView.setMaxHeight(Double.MAX_VALUE);
 
-
-        // view upload
         Button openUploadWindow = new Button("UPLOAD MEDIA");
         openUploadWindow.setPrefSize(170, 35);
         openUploadWindow.setStyle(
@@ -105,20 +95,16 @@ public class right implements bottom.SongSelectionListener {
         uploadView.setPadding(new Insets(10));
         uploadView.setAlignment(Pos.CENTER);
 
-        // view removing song
         songListContainer = new VBox(5);
         songListContainer.setPadding(new Insets(10));
         songListContainer.setAlignment(Pos.TOP_CENTER);
-
         ScrollPane removeScrollPane = new ScrollPane(songListContainer);
         removeScrollPane.setFitToWidth(true);
         removeScrollPane.setPrefHeight(580);
         removeScrollPane.setVbarPolicy(ScrollBarPolicy.AS_NEEDED);
         removeScrollPane.setHbarPolicy(ScrollBarPolicy.NEVER);
         removeScrollPane.setStyle("-fx-background-color: #E8F4E8; -fx-border-color: transparent;");
-
         VBox.setVgrow(removeScrollPane, Priority.ALWAYS);
-
         removeView = new VBox(10, new Label("UPLOADED SONGS:") {{
             setStyle("-fx-font-size: 16px; -fx-font-weight: bold; -fx-text-fill: white;");
         }}, removeScrollPane);
@@ -135,6 +121,7 @@ public class right implements bottom.SongSelectionListener {
         return rightPane;
     }
 
+    // Public method to explicitly set lyrics content
     public void setLyrics(String lyrics) {
         lyricsArea.setText(lyrics);
     }
@@ -160,7 +147,6 @@ public class right implements bottom.SongSelectionListener {
 
     private void populateRemoveSongList() {
         songListContainer.getChildren().clear();
-
         songservice service = new songservice();
         List<song> allSongs = service.getAllSongs();
 
@@ -177,34 +163,27 @@ public class right implements bottom.SongSelectionListener {
         for (song s : allSongs) {
             Label songTitleLabel = new Label(s.getTitle());
             songTitleLabel.setStyle("-fx-font-size: 14px; -fx-font-weight: bold; -fx-text-fill: #3A3A3A;");
-
             songTitleLabel.setTextOverrun(javafx.scene.control.OverrunStyle.ELLIPSIS);
             songTitleLabel.setMaxWidth(Double.MAX_VALUE);
             songTitleLabel.setMinWidth(0);
-
 
             Button removeBtn = new Button("Remove");
             removeBtn.setStyle(
                 "-fx-background-color: #FF7F7F; -fx-text-fill: white; -fx-font-weight: bold;" +
                 " -fx-font-size: 12px; -fx-background-radius: 3;"
             );
-
             removeBtn.setPrefWidth(REMOVE_BUTTON_FIXED_WIDTH);
             removeBtn.setMinWidth(REMOVE_BUTTON_FIXED_WIDTH);
             removeBtn.setMaxWidth(REMOVE_BUTTON_FIXED_WIDTH);
-
             removeBtn.setOnAction(e -> confirmAndRemoveSong(s));
 
             HBox songEntry = new HBox(10, songTitleLabel, removeBtn);
             songEntry.setPrefWidth(SONG_ENTRY_HBOX_WIDTH);
             songEntry.setMinWidth(SONG_ENTRY_HBOX_WIDTH);
             songEntry.setMaxWidth(SONG_ENTRY_HBOX_WIDTH);
-
             HBox.setHgrow(songTitleLabel, Priority.ALWAYS);
-
             songEntry.setAlignment(Pos.CENTER_LEFT);
             songEntry.setPadding(new Insets(5, 0, 5, 0));
-
             songListContainer.getChildren().add(songEntry);
         }
     }
@@ -241,11 +220,9 @@ public class right implements bottom.SongSelectionListener {
             );
         }
 
-        // styling ok and cancel buttons
         Button okButton = (Button) alert.getDialogPane().lookupButton(ButtonType.OK);
         Button cancelButton = (Button) alert.getDialogPane().lookupButton(ButtonType.CANCEL);
 
-        // styling ok button
         if (okButton != null) {
             okButton.setStyle(
                 "-fx-background-color: #FF7F7F;" +
@@ -256,7 +233,6 @@ public class right implements bottom.SongSelectionListener {
             );
         }
 
-        // styling cancel button
         if (cancelButton != null) {
             cancelButton.setStyle(
                 "-fx-background-color: #DBFEB8;" +
@@ -266,7 +242,6 @@ public class right implements bottom.SongSelectionListener {
                 "-fx-background-radius: 5;"
             );
         }
-        // --- End Styling ---
 
         Optional<ButtonType> result = alert.showAndWait();
         if (result.isPresent() && result.get() == ButtonType.OK) {
@@ -277,7 +252,6 @@ public class right implements bottom.SongSelectionListener {
     private void removeSongAction(song songToRemove) {
         songservice service = new songservice();
         try {
-            // delete video file
             Path videoPath = Paths.get(songToRemove.getVideoPath());
             if (Files.exists(videoPath)) {
                 Files.delete(videoPath);
@@ -286,7 +260,6 @@ public class right implements bottom.SongSelectionListener {
                 System.out.println("Video file not found for deletion: " + videoPath.getFileName() + ". Skipping file deletion.");
             }
 
-            // delete lyrics file
             Path lyricsPath = Paths.get(songToRemove.getLyricsPath());
             if (Files.exists(lyricsPath)) {
                 Files.delete(lyricsPath);
@@ -295,17 +268,13 @@ public class right implements bottom.SongSelectionListener {
                 System.out.println("Lyrics file not found for deletion: " + lyricsPath.getFileName() + ". Skipping file deletion.");
             }
 
-            // removing from database
             service.deleteSong(songToRemove.getId());
             System.out.println("Removed song from database: " + songToRemove.getTitle());
 
-            // refreshes UI
-            populateRemoveSongList(); // re-populate the remove song list
+            populateRemoveSongList(); 
             if (bottomPanel != null) {
-                bottomPanel.refreshSongDropdown(); // refresh the song dropdown
-            }
-            showLyrics();
-
+                bottomPanel.refreshSongDropdown(); 
+            } 
         } catch (IOException e) {
             System.err.println("Error deleting files for song " + songToRemove.getTitle() + ": " + e.getMessage());
             e.printStackTrace();
@@ -350,13 +319,11 @@ public class right implements bottom.SongSelectionListener {
         }
     }
 
-    // this opens up a window panel for uploading media files
     private void openUploadPopup() {
         Stage popupStage = new Stage();
         popupStage.initModality(Modality.APPLICATION_MODAL);
         popupStage.setTitle("Upload New Song");
 
-        // textfields for filepath display
         uploadVideoPathField = new TextField();
         uploadVideoPathField.setPromptText("Video File Path");
         uploadVideoPathField.setEditable(false);
@@ -368,7 +335,6 @@ public class right implements bottom.SongSelectionListener {
         uploadLyricsPathField.setEditable(false);
         uploadLyricsPathField.setPrefWidth(200);
         HBox.setHgrow(uploadLyricsPathField, Priority.ALWAYS);
-
 
         uploadStatusLabel = new Label();
         uploadStatusLabel.setStyle("-fx-text-fill: white; -fx-font-size: 12px;");
@@ -395,15 +361,11 @@ public class right implements bottom.SongSelectionListener {
             uploadLyricsPathField, "Text Files", "*.txt"
         ));
 
-
-        // HBoxes for input fields and buttons
         HBox videoFileChooserBox = new HBox(5, uploadVideoPathField, selectVideoButton);
         videoFileChooserBox.setAlignment(Pos.CENTER_LEFT);
         HBox lyricsFileChooserBox = new HBox(5, uploadLyricsPathField, selectLyricsButton);
         lyricsFileChooserBox.setAlignment(Pos.CENTER_LEFT);
 
-
-        // upload and clear buttons
         Button confirmUploadButton = new Button("UPLOAD MEDIA");
         confirmUploadButton.setPrefSize(170, 35);
         confirmUploadButton.setStyle(
@@ -425,7 +387,6 @@ public class right implements bottom.SongSelectionListener {
         HBox uploadButtonsContainer = new HBox(15, confirmUploadButton, clearFieldsButton);
         uploadButtonsContainer.setAlignment(Pos.CENTER);
 
-        // layout for popup window
         VBox layout = new VBox(15);
         layout.setPadding(new Insets(20));
         layout.setAlignment(Pos.CENTER);
@@ -434,7 +395,7 @@ public class right implements bottom.SongSelectionListener {
         layout.getChildren().addAll(
             new Label("UPLOAD NEW SONG") {{
                 setStyle("-fx-text-fill: white; -fx-font-size: 18px;" +
-                         " -fx-font-weight: bold;");
+                                     " -fx-font-weight: bold;");
             }},
             videoFileChooserBox,
             lyricsFileChooserBox,
@@ -448,7 +409,6 @@ public class right implements bottom.SongSelectionListener {
         popupStage.showAndWait();
     }
 
-    // this handles uploading
     private void uploadSongAction(Stage stageToClose) {
         String videoPath = uploadVideoPathField.getText().trim();
         String lyricsPath = uploadLyricsPathField.getText().trim();
@@ -521,7 +481,6 @@ public class right implements bottom.SongSelectionListener {
         }
     }
 
-    // this clears the input fields
     private void clearUploadFields() {
         if (uploadVideoPathField != null) uploadVideoPathField.clear();
         if (uploadLyricsPathField != null) uploadLyricsPathField.clear();
@@ -530,9 +489,15 @@ public class right implements bottom.SongSelectionListener {
 
     @Override
     public void onSongSelected(String songTitle) {
-        System.out.println("DEBUG: Song selected in right panel callback: " + songTitle);
+        System.out.println("DEBUG: Right panel received onSongSelected event for: " + songTitle);
 
-        showLyrics();
+        showLyrics(); // Ensure lyrics view is active when a song is selected
+
+        if (songTitle == null || songTitle.isEmpty() || "No song selected".equals(songTitle)) {
+            lyricsArea.setText("Lyrics will appear here when a song is selected.");
+            System.out.println("DEBUG: Right: No song selected or cleared, clearing lyrics area.");
+            return;
+        }
 
         songservice songService = new songservice();
         Optional<song> selectedSongOptional = songService.getSongByTitle(songTitle);
@@ -552,7 +517,8 @@ public class right implements bottom.SongSelectionListener {
                         );
                     } catch (IOException e) {
                         lyricsArea.setText(
-                            "Error loading lyrics from file: " + e.getMessage()
+                            "Error loading lyrics from file: " + e.getMessage() +
+                            "\nPlease ensure the lyrics file is not open or corrupted."
                         );
                         System.err.println(
                             "ERROR: Could not read lyrics file: " + lyricsFilePath +
@@ -563,21 +529,54 @@ public class right implements bottom.SongSelectionListener {
                 } else {
                     lyricsArea.setText(
                         "Lyrics file not found at: " + lyricsFilePath +
-                        "\n(File may have been moved or deleted externally)."
+                        "\n(File may have been moved, deleted externally, or path is incorrect)."
                     );
                     System.err.println(
                         "ERROR: Lyrics file does not exist: " + lyricsFilePath
                     );
                 }
             } else {
-                lyricsArea.setText("No lyrics file path stored for this song.");
+                lyricsArea.setText("No lyrics file path stored for this song. Please upload valid lyrics.");
                 System.out.println(
                     "DEBUG: No lyrics path found for song: " + songTitle
                 );
             }
         } else {
-            lyricsArea.setText("Song details not found in the database for: " + songTitle);
+            lyricsArea.setText("Song details not found in the database for: " + songTitle +
+                               "\n(This might happen if the song was removed externally.)");
             System.err.println("ERROR: Song not found in database for title: " + songTitle);
         }
+    }
+
+    // --- Implementations for remaining SongSelectionListener methods, needed because right implements the interface ---
+    @Override
+    public void onPlay() {
+        System.out.println("DEBUG: Right panel received onPlay event (ignored).");
+    }
+
+    @Override
+    public void onPause() {
+        System.out.println("DEBUG: Right panel received onPause event (ignored).");
+    }
+
+    @Override
+    public void onRewind() {
+        System.out.println("DEBUG: Right panel received onRewind event (ignored).");
+    }
+
+    @Override
+    public void onForward() {
+        System.out.println("DEBUG: Right panel received onForward event (ignored).");
+    }
+
+    @Override
+    public void onStop() {
+        lyricsArea.setText("Lyrics will appear here when a song is selected.");
+        System.out.println("DEBUG: Right panel received onStop event. Lyrics cleared.");
+    }
+    
+    @Override
+    public void onShuffle() {
+        System.out.println("DEBUG: Right panel received onShuffle event (ignored).");
     }
 }

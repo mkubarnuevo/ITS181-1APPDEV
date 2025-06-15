@@ -1,20 +1,20 @@
 package finalproj.view;
 
+import javafx.application.Platform;
 import javafx.geometry.Insets;
 import javafx.scene.Node;
 import javafx.scene.control.Label;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.StackPane;
-import javafx.scene.media.Media; // Import Media
-import javafx.scene.media.MediaPlayer; // Import MediaPlayer
+import javafx.scene.media.MediaPlayer;
 import javafx.scene.media.MediaView;
 
 public class left {
 
     private BorderPane leftPane;
     private MediaView mediaView;
-    private MediaPlayer mediaPlayer; // Keep a reference to the MediaPlayer
-    private Label placeholder; // Make placeholder an instance variable
+    private MediaPlayer currentMediaPlayer; 
+    private Label placeholder; 
 
     public left() {
         initialize();
@@ -31,14 +31,11 @@ public class left {
             "-fx-background-position: center center;"
         );
 
-        // MediaView for video playback in center
         mediaView = new MediaView();
         mediaView.setPreserveRatio(true);
-
         mediaView.fitWidthProperty().bind(leftPane.widthProperty().subtract(20));
         mediaView.fitHeightProperty().bind(leftPane.heightProperty().subtract(20));
 
-        // Initialize placeholder as an instance variable
         placeholder = new Label("Choose A Song!");
         placeholder.setStyle(
             "-fx-text-fill: #7A918D;" +
@@ -51,86 +48,54 @@ public class left {
         );
         
         StackPane centerStack = new StackPane();
-        centerStack.getChildren().addAll(mediaView, placeholder); // Add both to the stack
+        centerStack.getChildren().addAll(mediaView, placeholder);
 
         leftPane.setCenter(centerStack);
+        
+        showPlaceholder(); 
     }
 
     public Node getView() {
         return leftPane;
     }
 
-    public MediaView getMediaView() {
-        return mediaView;
-    }
-
-    /**
-     * Sets the media to be played in the MediaView.
-     * Stops any currently playing media and loads the new one.
-     * @param mediaPath The URL string of the media file (e.g., "file:///path/to/song.mp4").
-     */
-    public void setMedia(String mediaPath) {
-        if (mediaPlayer != null) {
-            mediaPlayer.stop(); // Stop current playback
-            mediaPlayer.dispose(); // Release resources
+    public void setMediaPlayer(MediaPlayer player) {
+        if (this.currentMediaPlayer != null && this.currentMediaPlayer != player) {
+            this.currentMediaPlayer.stop();
+            this.currentMediaPlayer.dispose();
+            System.out.println("DEBUG: Left: Old MediaPlayer disposed by setMediaPlayer.");
         }
+        this.currentMediaPlayer = player; 
+        mediaView.setMediaPlayer(player); 
 
-        if (mediaPath != null && !mediaPath.isEmpty()) {
-            try {
-                Media media = new Media(mediaPath);
-                mediaPlayer = new MediaPlayer(media);
-                mediaView.setMediaPlayer(mediaPlayer);
-
-                // Hide placeholder when media is loaded
-                placeholder.setVisible(false);
-
-                // Optional: Auto-play the media, or handle playback via controls
-                // mediaPlayer.play();
-
-                // Add listeners for potential errors
-                mediaPlayer.setOnError(() -> {
-                    System.err.println("MediaPlayer Error: " + mediaPlayer.getError());
-                    // Show placeholder or display an error message
-                    placeholder.setText("Error loading media!");
-                    placeholder.setVisible(true);
-                });
-
-            } catch (Exception e) {
-                System.err.println("Error creating Media or MediaPlayer: " + e.getMessage());
-                // Show placeholder or display an error message
-                placeholder.setText("Error: Invalid media path!");
-                placeholder.setVisible(true);
-                mediaView.setMediaPlayer(null); // Clear the media view
-            }
+        if (player != null) {
+            Platform.runLater(() -> hidePlaceholder());
+            System.out.println("DEBUG: Left: MediaPlayer assigned to MediaView. Hiding placeholder.");
         } else {
-            // No media path provided, clear media and show placeholder
-            mediaView.setMediaPlayer(null);
-            placeholder.setText("Choose A Song!");
-            placeholder.setVisible(true);
+            Platform.runLater(() -> showPlaceholder());
+            System.out.println("DEBUG: Left: MediaPlayer removed from MediaView. Showing placeholder.");
         }
     }
 
-    /**
-     * Gets the current MediaPlayer instance associated with this view.
-     * This is useful for external controllers to manage playback (play, pause, etc.).
-     * @return The current MediaPlayer, or null if none is set.
-     */
     public MediaPlayer getMediaPlayer() {
-        return mediaPlayer;
+        return currentMediaPlayer;
     }
 
-    /**
-     * Shows the "Choose A Song!" placeholder label.
-     */
     public void showPlaceholder() {
         placeholder.setText("Choose A Song!");
         placeholder.setVisible(true);
+        mediaView.setVisible(false); 
+        leftPane.setStyle(
+            "-fx-background-image: url('/images/playbackbackground2.jpg'); " +
+            "-fx-background-size: cover; " +
+            "-fx-background-repeat: no-repeat; " +
+            "-fx-background-position: center center;"
+        );
     }
 
-    /**
-     * Hides the "Choose A Song!" placeholder label.
-     */
     public void hidePlaceholder() {
         placeholder.setVisible(false);
+        mediaView.setVisible(true);
+        // The background image will now remain visible behind the video.
     }
 }

@@ -1,4 +1,7 @@
+/*
 package finalproj.controller;
+
+import finalproj.view.left;
 
 import java.io.File;
 import java.nio.file.Files;
@@ -111,7 +114,7 @@ public class musiccontroller implements bottom.SongSelectionListener {
                 return;
             }
 
-            leftView.setMedia(mediaPathURI);
+            leftView.setMediaPlayer(mediaPathURI);
             currentMediaPlayer = leftView.getMediaPlayer();
 
             if (currentMediaPlayer != null) {
@@ -192,3 +195,4 @@ public class musiccontroller implements bottom.SongSelectionListener {
         }
     }
 }
+    */
