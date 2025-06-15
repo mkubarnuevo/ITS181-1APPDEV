@@ -1,5 +1,6 @@
 package finalproj.view;
 
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
@@ -13,6 +14,7 @@ import javafx.scene.control.Button;
 import javafx.scene.control.ComboBox;
 import javafx.scene.control.Label;
 import javafx.scene.control.ProgressBar;
+import javafx.scene.input.KeyEvent;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Priority;
 import javafx.scene.layout.Region;
@@ -29,6 +31,7 @@ public class bottom {
     private ProgressBar progressBar;
     private SongSelectionListener songListener;
     private Label currentlyPlayingSongLabel;
+    private boolean isPlaying = false;
 
     public bottom() {
         initialize();
@@ -74,17 +77,25 @@ public class bottom {
                 }
             }
         });
-        
+
         songDropdown.setOnAction(e -> {
             String selectedSong = songDropdown.getValue();
             if (selectedSong != null) {
-                // update currently playing song
                 currentlyPlayingSongLabel.setText(selectedSong);
                 if (songListener != null) {
                     songListener.onSongSelected(selectedSong);
                 }
+                 if (songDropdown.getValue() != null && !songDropdown.getValue().isEmpty()) {
+                    isPlaying = true;
+                    playButton.setText("𝗹𝗹");
+                } else {
+                    isPlaying = false;
+                    playButton.setText("▶");
+                }
             } else {
                 currentlyPlayingSongLabel.setText("No song selected");
+                isPlaying = false;
+                playButton.setText("▶");
             }
         });
 
@@ -101,7 +112,6 @@ public class bottom {
         forwardButton = new Button("⏩");
         shuffleButton = new Button("⇄");
 
-        // Common button style string
         String buttonStyle =
             "-fx-background-color: #C5EDAC;" +
             "-fx-text-fill: #99C2A2;" +
@@ -116,32 +126,66 @@ public class bottom {
         forwardButton.setStyle(buttonStyle);
         shuffleButton.setStyle(buttonStyle);
 
+        playButton.setOnAction(e -> {
+            if (currentlyPlayingSongLabel.getText().equals("No song selected") ||
+                currentlyPlayingSongLabel.getText().equals("Select a song")) {
+                System.out.println("DEBUG: Cannot play. No song selected.");
+                return;
+            }
+
+            if (isPlaying) {
+                playButton.setText("▶");
+                System.out.println("DEBUG: Paused playback of " + currentlyPlayingSongLabel.getText());
+            } else {
+                playButton.setText("𝗹𝗹");
+                System.out.println("DEBUG: Started/Resumed playback of " + currentlyPlayingSongLabel.getText());
+            }
+            isPlaying = !isPlaying;
+        });
+
         shuffleButton.setOnAction(e -> {
             songservice songService = new songservice();
             List<song> allSongs = songService.getAllSongs();
+            String currentlyPlayingTitle = currentlyPlayingSongLabel.getText();
 
-            if (!allSongs.isEmpty()) {
-                Collections.shuffle(allSongs); // Shuffle the list of songs
+            // create a mutable list to work with
+            List<song> availableSongsForShuffle = new ArrayList<>(allSongs);
+
+            // remove the currently playing song from the list if it exists and valid
+            if (!currentlyPlayingTitle.equals("No song selected") && !currentlyPlayingTitle.equals("Select a song")) {
+                availableSongsForShuffle.removeIf(s -> s.getTitle().equals(currentlyPlayingTitle));
+                System.out.println("DEBUG: Removed '" + currentlyPlayingTitle + "' from shuffle candidates.");
+            }
+
+            if (!availableSongsForShuffle.isEmpty()) {
+                Collections.shuffle(availableSongsForShuffle);
 
                 Platform.runLater(() -> {
-                    songDropdown.getItems().clear(); // Clear current items
-                    allSongs.forEach(s -> songDropdown.getItems().add(s.getTitle())); // Add shuffled titles
+                    songDropdown.getItems().clear();
+                    allSongs.forEach(s -> songDropdown.getItems().add(s.getTitle()));
 
-                    // Select the first song in the shuffled list
-                    String firstShuffledSong = allSongs.get(0).getTitle();
-                    songDropdown.getSelectionModel().select(firstShuffledSong);
-                    currentlyPlayingSongLabel.setText(firstShuffledSong); // Update label immediately
+                    String nextShuffledSong = availableSongsForShuffle.get(0).getTitle();
+                    songDropdown.getSelectionModel().select(nextShuffledSong);
+                    currentlyPlayingSongLabel.setText(nextShuffledSong);
 
-                    // Notify listener of the newly selected (first shuffled) song
                     if (songListener != null) {
-                        songListener.onSongSelected(firstShuffledSong);
+                        songListener.onSongSelected(nextShuffledSong);
                     }
-                    System.out.println("DEBUG: Songs shuffled. First song selected: " + firstShuffledSong);
+                    System.out.println("DEBUG: Songs shuffled. Next song selected: " + nextShuffledSong);
+
+                    isPlaying = true;
+                    playButton.setText("𝗹𝗹");
                 });
             } else {
                 Platform.runLater(() -> {
-                    currentlyPlayingSongLabel.setText("No songs to shuffle.");
-                    System.out.println("DEBUG: Attempted to shuffle, but no songs are available.");
+                    if (allSongs.isEmpty()) {
+                        currentlyPlayingSongLabel.setText("No songs to shuffle.");
+                        System.out.println("DEBUG: Attempted to shuffle, but no songs are available.");
+                    } else {
+                        System.out.println("DEBUG: Only one song available. Cannot shuffle to a different song.");
+                    }
+                    isPlaying = false;
+                    playButton.setText("▶");
                 });
             }
         });
@@ -155,11 +199,10 @@ public class bottom {
         HBox.setHgrow(spacerLeft, Priority.ALWAYS);
         HBox.setHgrow(spacerRight, Priority.ALWAYS);
 
-        VBox nowPlayingDisplayBox = new VBox(5, nowPlayingTitleLabel, currentlyPlayingSongLabel); // Uses nowPlayingTitleLabel
+        VBox nowPlayingDisplayBox = new VBox(5, nowPlayingTitleLabel, currentlyPlayingSongLabel);
         nowPlayingDisplayBox.setAlignment(Pos.CENTER);
 
-        // Clear and re-add all children to the main top HBox
-        topControlsBox.getChildren().clear(); // This is crucial to ensure correct order and no duplicates
+        topControlsBox.getChildren().clear();
         topControlsBox.getChildren().addAll(songDropdown, spacerLeft, nowPlayingDisplayBox, spacerRight, playbackButtonsBox);
 
         // progress bar
@@ -196,8 +239,24 @@ public class bottom {
         return forwardButton;
     }
 
+    public Button getShuffleButton() {
+        return shuffleButton;
+    }
+
     public ProgressBar getProgressBar() {
         return progressBar;
+    }
+
+    public void registerKeybinds(javafx.event.EventHandler<KeyEvent> handler) {
+        // this enures the handler is only added when a song is selected
+        bottomPane.sceneProperty().addListener((obs, oldScene, newScene) -> {
+            if (oldScene != null) {
+                oldScene.removeEventFilter(KeyEvent.KEY_PRESSED, handler);
+            }
+            if (newScene != null) {
+                newScene.addEventFilter(KeyEvent.KEY_PRESSED, handler);
+            }
+        });
     }
 
     public void refreshSongDropdown() {
@@ -207,10 +266,14 @@ public class bottom {
         Platform.runLater(() -> {
             songDropdown.getItems().clear();
             songs.forEach(s -> songDropdown.getItems().add(s.getTitle()));
-            if (songs.isEmpty() && songDropdown.getValue() == null) {
+            if (songs.isEmpty()) {
                 currentlyPlayingSongLabel.setText("No song selected");
-            } else if (songDropdown.getValue() == null && !songs.isEmpty()) {
+                isPlaying = false;
+                playButton.setText("▶");
+            } else if (songDropdown.getValue() == null) {
                 currentlyPlayingSongLabel.setText("Select a song");
+                isPlaying = false;
+                playButton.setText("▶");
             }
         });
     }
@@ -219,8 +282,12 @@ public class bottom {
         Platform.runLater(() -> {
             if (songTitle != null && !songTitle.isEmpty()) {
                 currentlyPlayingSongLabel.setText(songTitle);
+                isPlaying = true;
+                playButton.setText("||");
             } else {
                 currentlyPlayingSongLabel.setText("No song selected");
+                isPlaying = false;
+                playButton.setText("▶");
             }
         });
     }

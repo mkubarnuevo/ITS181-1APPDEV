@@ -97,7 +97,8 @@ public class right implements bottom.SongSelectionListener {
         openUploadWindow.setPrefSize(170, 35);
         openUploadWindow.setStyle(
             "-fx-background-color: #DBFEB8; -fx-font-weight: bold;" +
-            " -fx-text-fill: #99C2A2; -fx-font-size: 16px;"
+            " -fx-text-fill: #99C2A2; -fx-font-size: 16px;" +
+            "-fx-effect: dropshadow(two-pass-box, rgba(0,0,0,0.5), 3, 0, 0, 1);"
         );
         openUploadWindow.setOnAction(e -> openUploadPopup());
         uploadView = new VBox(10, openUploadWindow);
@@ -170,9 +171,17 @@ public class right implements bottom.SongSelectionListener {
             return;
         }
 
+        final double REMOVE_BUTTON_FIXED_WIDTH = 70.0;
+        final double SONG_ENTRY_HBOX_WIDTH = 250.0;
+
         for (song s : allSongs) {
             Label songTitleLabel = new Label(s.getTitle());
             songTitleLabel.setStyle("-fx-font-size: 14px; -fx-font-weight: bold; -fx-text-fill: #3A3A3A;");
+
+            songTitleLabel.setTextOverrun(javafx.scene.control.OverrunStyle.ELLIPSIS);
+            songTitleLabel.setMaxWidth(Double.MAX_VALUE);
+            songTitleLabel.setMinWidth(0);
+
 
             Button removeBtn = new Button("Remove");
             removeBtn.setStyle(
@@ -180,11 +189,19 @@ public class right implements bottom.SongSelectionListener {
                 " -fx-font-size: 12px; -fx-background-radius: 3;"
             );
 
+            removeBtn.setPrefWidth(REMOVE_BUTTON_FIXED_WIDTH);
+            removeBtn.setMinWidth(REMOVE_BUTTON_FIXED_WIDTH);
+            removeBtn.setMaxWidth(REMOVE_BUTTON_FIXED_WIDTH);
+
             removeBtn.setOnAction(e -> confirmAndRemoveSong(s));
 
-            HBox songEntry = new HBox(10, songTitleLabel);
+            HBox songEntry = new HBox(10, songTitleLabel, removeBtn);
+            songEntry.setPrefWidth(SONG_ENTRY_HBOX_WIDTH);
+            songEntry.setMinWidth(SONG_ENTRY_HBOX_WIDTH);
+            songEntry.setMaxWidth(SONG_ENTRY_HBOX_WIDTH);
+
             HBox.setHgrow(songTitleLabel, Priority.ALWAYS);
-            songEntry.getChildren().add(removeBtn);
+
             songEntry.setAlignment(Pos.CENTER_LEFT);
             songEntry.setPadding(new Insets(5, 0, 5, 0));
 
@@ -359,7 +376,8 @@ public class right implements bottom.SongSelectionListener {
         Button selectVideoButton = new Button("SELECT VIDEO");
         selectVideoButton.setStyle(
             "-fx-background-color: #DBFEB8; -fx-font-weight: bold;" +
-            " -fx-text-fill: #5D5C61; -fx-font-size: 14px;"
+            " -fx-text-fill: #5D5C61; -fx-font-size: 14px;" +
+            "-fx-effect: dropshadow(two-pass-box, rgba(0,0,0,0.5), 3, 0, 0, 1);"
         );
         selectVideoButton.setPrefWidth(120);
         selectVideoButton.setOnAction(e -> browseFile(
@@ -369,7 +387,8 @@ public class right implements bottom.SongSelectionListener {
         Button selectLyricsButton = new Button("SELECT LYRICS");
         selectLyricsButton.setStyle(
             "-fx-background-color: #DBFEB8; -fx-font-weight: bold;" +
-            " -fx-text-fill: #5D5C61; -fx-font-size: 14px;"
+            " -fx-text-fill: #5D5C61; -fx-font-size: 14px;" +
+            "-fx-effect: dropshadow(two-pass-box, rgba(0,0,0,0.5), 3, 0, 0, 1);"
         );
         selectLyricsButton.setPrefWidth(120);
         selectLyricsButton.setOnAction(e -> browseFile(
@@ -389,7 +408,8 @@ public class right implements bottom.SongSelectionListener {
         confirmUploadButton.setPrefSize(170, 35);
         confirmUploadButton.setStyle(
             "-fx-background-color: #99C2A2; -fx-font-weight: bold;" +
-            " -fx-text-fill: white; -fx-font-size: 14px;"
+            " -fx-text-fill: white; -fx-font-size: 14px;" +
+            "-fx-effect: dropshadow(two-pass-box, rgba(0,0,0,0.5), 3, 0, 0, 1);"
         );
         confirmUploadButton.setOnAction(e -> uploadSongAction(popupStage));
 
@@ -397,7 +417,8 @@ public class right implements bottom.SongSelectionListener {
         clearFieldsButton.setPrefSize(170, 35);
         clearFieldsButton.setStyle(
             "-fx-background-color: #FF7F7F; -fx-font-weight: bold;" +
-            " -fx-text-fill: white; -fx-font-size: 14px;"
+            " -fx-text-fill: white; -fx-font-size: 14px;" +
+            "-fx-effect: dropshadow(two-pass-box, rgba(0,0,0,0.5), 3, 0, 0, 1);"
         );
         clearFieldsButton.setOnAction(e -> clearUploadFields());
 
@@ -511,7 +532,7 @@ public class right implements bottom.SongSelectionListener {
     public void onSongSelected(String songTitle) {
         System.out.println("DEBUG: Song selected in right panel callback: " + songTitle);
 
-        showLyrics(); // Always show lyrics when a song is selected
+        showLyrics();
 
         songservice songService = new songservice();
         Optional<song> selectedSongOptional = songService.getSongByTitle(songTitle);

@@ -1,6 +1,7 @@
 package finalproj;
 
 import finalproj.controller.maincontroller;
+import finalproj.controller.playbackcontroller;
 import finalproj.view.bottom;
 import finalproj.view.left;
 import finalproj.view.right;
@@ -14,19 +15,19 @@ public class MainApp extends Application {
 
     @Override
     public void start(Stage primaryStage) {
-        // panel views
         left leftPane = new left();
         bottom bottomPane = new bottom();
+        playbackcontroller controller = new playbackcontroller(bottomPane);
         right rightPane = new right(bottomPane);
         top topPane = new top(rightPane);
 
         BorderPane root = new BorderPane();
-        root.setLeft(leftPane.getView());
+        root.setCenter(leftPane.getView());
         root.setTop(topPane.getView());
         root.setBottom(bottomPane.getView());
         root.setRight(rightPane.getView());
 
-        // controller setup
+        // controller
         new maincontroller(topPane, rightPane);
 
         Scene scene = new Scene(root, 900, 600);
